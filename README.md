@@ -1,4 +1,4 @@
-# Typescript Compiler
+# TypeScript Compiler
 
 ## Local Development
 
