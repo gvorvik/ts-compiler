@@ -1,0 +1,5 @@
+# Dune build artifacts
+_build
+
+# OPAM artifacts
+_opam
