@@ -27,3 +27,9 @@ To run all tests, run:
 ```bash
 dune test
 ```
+
+To format files, run:
+
+```bash
+dune fmt
+```
