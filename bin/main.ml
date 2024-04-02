@@ -15,6 +15,5 @@ let rec collect l acc =
       let () = print_endline (Lexer.show_token t) in
       collect l' (t :: acc)
 
-let _ =
-  let lexer = Lexer.of_string sample_program in
-  collect lexer []
+let lexer = Lexer.of_string sample_program
+let _ = collect lexer []
