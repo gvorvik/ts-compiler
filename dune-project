@@ -24,6 +24,7 @@
 (depends
    (ocaml (>= "5.0.0"))
    dune
+   (bisect_ppx (>= "2.5.0"))
    (ounit2 (>= "2.2.7"))
    (qcheck (>= "0.21.3"))
    (odoc (>= "2.0.0")))

@@ -1,2 +1,3 @@
 (library
- (name ts_compiler))
+ (name ts_compiler)
+ (instrumentation (backend bisect_ppx)))
