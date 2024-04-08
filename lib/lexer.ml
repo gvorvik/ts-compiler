@@ -1,4 +1,4 @@
-(* open Token *)
+open Token
 
 type lexer = { lex_buffer : bytes; lex_buffer_len : int; lex_curr_pos : int }
 
@@ -11,7 +11,7 @@ let is_valid_char x =
 
 let string_of_char c = String.make 1 c
 let inc_lex_curr_pos l n = { l with lex_curr_pos = l.lex_curr_pos + n }
-let filter_key_words = function "const" -> "Const" | _ -> "Iden"
+let filter_key_words = function "const" -> Const | t -> Iden t
 
 let rec read_word l t =
   if
@@ -20,7 +20,6 @@ let rec read_word l t =
   then
     let char = Bytes.get l.lex_buffer l.lex_curr_pos in
     read_word (inc_lex_curr_pos l 1) (t ^ string_of_char char)
-    (* else (t, Iden t) *)
   else (t, filter_key_words t)
 
 let rec read_number l t =
@@ -30,18 +29,17 @@ let rec read_number l t =
   then
     let char = Bytes.get l.lex_buffer l.lex_curr_pos in
     read_number (inc_lex_curr_pos l 1) (t ^ string_of_char char)
-    (* else (t, Int (int_of_string t)) *)
-  else (t, "Int")
+  else (t, Int (int_of_string t))
 
 let build_token l =
   if l.lex_curr_pos < l.lex_buffer_len then
     match Bytes.get l.lex_buffer l.lex_curr_pos with
-    | '+' -> ("+", "Add")
-    | '=' -> ("=", "Equal")
-    | ';' -> (";", "Semi")
+    | '+' -> ("+", Add)
+    | '=' -> ("=", Equal)
+    | ';' -> (";", Semi)
     | '0' .. '9' -> read_number l ""
     | _ -> read_word l ""
-  else ("", "EOF")
+  else ("", EOF)
 
 let of_string s =
   {
