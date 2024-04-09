@@ -36,7 +36,8 @@ let build_token l =
     | '=' -> ("=", Token.Equal)
     | ';' -> (";", Token.Semi)
     | '0' .. '9' -> read_number l ""
-    | _ -> read_word l ""
+    | 'a' .. 'z' | 'A' .. 'Z' | '_' -> read_word l ""
+    | c -> (string_of_char c, Token.Iden (string_of_char c))
   else ("", Token.EOF)
 
 let of_string s =
@@ -49,7 +50,7 @@ let of_string s =
 let rec traverse_white_space l =
   if l.lex_curr_pos < l.lex_buffer_len then
     match Bytes.get l.lex_buffer l.lex_curr_pos with
-    | ' ' -> inc_lex_curr_pos l 1 |> traverse_white_space
+    | ' ' | '\n' | '\r' | '\t' -> inc_lex_curr_pos l 1 |> traverse_white_space
     | _ -> l
   else l
 
@@ -59,13 +60,13 @@ let next_token l =
   let token_length = token |> fst |> String.length in
   (inc_lex_curr_pos l token_length, token |> snd)
 
-let peek_token l = l |> build_token |> snd
+let peek_token l = l |> next_token |> snd
 
 let show_token = function
   | Token.Add -> "Add"
   | Token.Const -> "Const"
   | Token.EOF -> "EOF"
   | Token.Equal -> "Equal"
-  | Token.Semi -> ";"
+  | Token.Semi -> "Semi"
   | Token.Iden s -> "Iden " ^ s
   | Token.Int i -> "Int " ^ string_of_int i
