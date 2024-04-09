@@ -7,29 +7,53 @@ It's assumed a valid version of `ocaml` and `dune` are already installed in an O
 To install required dependencies, run the following for your `switch`:
 
 ```bash
-opam install ounit2 qcheck odoc
+opam install ounit2 qcheck odoc bisect_ppx
 ```
 
-To build the project, run:
+### Building the project
 
 ```bash
 dune build
 ```
 
-To run the executable's entry point, run:
+- Or `make build`
+
+### Running the executable
 
 ```bash
 dune exec bin/main.exe
 ```
 
-To run all tests, run:
+- Or `make run`
+
+### Running tests
 
 ```bash
 dune test
 ```
 
-To format files, run:
+- Or `make test`
+
+### Generating coverage reports
+
+```bash
+make coverage
+```
+
+Then open the `.html` file in your browser
+
+### Formatting files
 
 ```bash
 dune fmt
 ```
+
+- Or `make fmt`
+
+### Generating doc page
+
+```bash
+make doc
+```
+
+Then open the `.html` file in your browser
