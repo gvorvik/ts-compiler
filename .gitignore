@@ -1,5 +1,10 @@
+*.DS_Store
+
 # Dune build artifacts
 _build
 
 # OPAM artifacts
 _opam
+
+# Code coverage (bisect_ppx)
+_coverage
