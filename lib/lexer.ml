@@ -66,6 +66,6 @@ let show_token = function
   | Token.Const -> "Const"
   | Token.EOF -> "EOF"
   | Token.Equal -> "Equal"
+  | Token.Semi -> ";"
   | Token.Iden s -> "Iden " ^ s
   | Token.Int i -> "Int " ^ string_of_int i
-  | _ -> "Another Token"
