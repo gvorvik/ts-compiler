@@ -18,7 +18,7 @@ let next_token_tests =
   "next_token tests"
   >::: [
          make_next_token_test "empty program" "" [ EOF ];
-         make_next_token_test "program with whitespace" "   \n\t\r\n" [ EOF ];
+         make_next_token_test "program with whitespace" "   \n\r\t\n" [ EOF ];
          make_next_token_test "basic assignment expression" "const x = 1 + 2;"
            [ Const; Iden "x"; Equal; Int 1; Add; Int 2; Semi; EOF ];
          make_next_token_test "compact assignment expression"
