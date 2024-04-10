@@ -19,11 +19,11 @@ jobs:
           ocaml-compiler: 5.1.1
 
       - name: Install dependencies
-        run: opam install . --deps-only --with-test
+        run: make install
 
       - name: Build project
         run: make build
 
-      - name: Test code
+      - name: Test project
         run: make coverage
 

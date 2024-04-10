@@ -2,6 +2,9 @@
 
 all: build coverage doc
 
+install:
+	@opam install . --deps-only --with-test
+
 clean:
 	@opam exec -- dune clean
 
