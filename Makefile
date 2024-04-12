@@ -2,27 +2,30 @@
 
 all: build coverage doc
 
+install:
+	@opam install . --deps-only --with-test
+
 clean:
-	@dune clean
+	@opam exec -- dune clean
 
 build:
-	@dune build
+	@opam exec -- dune build
 
 run:
-	@dune exec bin/main.exe
+	@opam exec -- dune exec bin/main.exe
 
 test:
-	@dune runtest
+	@opam exec -- dune runtest
 
 coverage:
-	@dune runtest --instrument-with bisect_ppx --force
-	@bisect-ppx-report html
+	@opam exec -- dune runtest --instrument-with bisect_ppx --force
+	@opam exec -- bisect-ppx-report html
 	@echo "Coverage report generated in _coverage/index.html"
-	@bisect-ppx-report summary
+	@opam exec -- bisect-ppx-report summary
 
 fmt:
-	@dune fmt
+	@opam exec -- dune fmt
 
 doc:
-	@dune build @doc
+	@opam exec -- dune build @doc
 	@echo "Documentation generated in _build/default/_doc/_html/index.html"
