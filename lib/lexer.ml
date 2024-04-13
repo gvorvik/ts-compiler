@@ -8,43 +8,35 @@ let is_valid_char x =
   x |> is_number || x |> is_letter || x |> is_acceptable_char
 
 let string_of_char c = String.make 1 c
-let get_future_char l i = Bytes.get l.lex_buffer (l.lex_curr_pos + i)
+let get_char l = Bytes.get l.lex_buffer l.lex_curr_pos
 let inc_lex_curr_pos l i = { l with lex_curr_pos = l.lex_curr_pos + i }
 let filter_key_words = function "const" -> Token.Const | t -> Token.Iden t
 
 (* First char is a .. z or A .. Z *)
 let rec read_word l t =
-  if
-    l.lex_curr_pos < l.lex_buffer_len
-    && is_valid_char (Bytes.get l.lex_buffer l.lex_curr_pos)
-  then
-    let char = Bytes.get l.lex_buffer l.lex_curr_pos in
-    read_word (inc_lex_curr_pos l 1) (t ^ string_of_char char)
+  if l.lex_curr_pos < l.lex_buffer_len && l |> get_char |> is_valid_char then
+    read_word (inc_lex_curr_pos l 1) (t ^ (l |> get_char |> string_of_char))
   else (t, filter_key_words t)
 
 (* First char is 0 .. 9 *)
 let rec read_number l t =
-  if
-    l.lex_curr_pos < l.lex_buffer_len
-    && is_number (Bytes.get l.lex_buffer l.lex_curr_pos)
-  then
-    let char = Bytes.get l.lex_buffer l.lex_curr_pos in
-    read_number (inc_lex_curr_pos l 1) (t ^ string_of_char char)
+  if l.lex_curr_pos < l.lex_buffer_len && l |> get_char |> is_number then
+    read_number (inc_lex_curr_pos l 1) (t ^ (l |> get_char |> string_of_char))
   else (t, Token.Int (int_of_string t))
 
 (* First char is +/- *)
 let read_plus_minus l c1 =
-  match get_future_char l 1 with
+  match inc_lex_curr_pos l 1 |> get_char with
   | '=' -> (string_of_char c1 ^ "=", Token.Assign)
   | c2 ->
       if c1 = c2 then (string_of_char c1 ^ string_of_char c2, Token.Inc_Dec)
       else (string_of_char c1, Token.Add_Subtract)
 
-(*First char is =*)
+(* First char is = *)
 let read_equal l =
-  match get_future_char l 1 with
+  match inc_lex_curr_pos l 1 |> get_char with
   | '=' -> (
-      match get_future_char l 2 with
+      match inc_lex_curr_pos l 2 |> get_char with
       | '=' -> ("===", Token.Equality)
       | _ -> ("==", Token.Equality))
   | '>' -> ("=>", Token.Arrow)
@@ -52,7 +44,7 @@ let read_equal l =
 
 let build_token l =
   if l.lex_curr_pos < l.lex_buffer_len then
-    match Bytes.get l.lex_buffer l.lex_curr_pos with
+    match l |> get_char with
     | '+' -> read_plus_minus l '+'
     | '-' -> read_plus_minus l '-'
     | '=' -> read_equal l
@@ -71,7 +63,7 @@ let of_string s =
 
 let rec traverse_white_space l =
   if l.lex_curr_pos < l.lex_buffer_len then
-    match Bytes.get l.lex_buffer l.lex_curr_pos with
+    match l |> get_char with
     | ' ' | '\n' | '\r' | '\t' -> inc_lex_curr_pos l 1 |> traverse_white_space
     | _ -> l
   else l
