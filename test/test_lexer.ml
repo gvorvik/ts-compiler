@@ -20,34 +20,39 @@ let next_token_tests =
          make_next_token_test "empty program" "" [ EOF ];
          make_next_token_test "program with whitespace" "   \n\r\t\n" [ EOF ];
          make_next_token_test "basic assignment expression" "const x = 1 + 2;"
-           [ Const; Iden "x"; Assign; Int 1; Add_Subtract; Int 2; Semi; EOF ];
+           [ Const; Iden "x"; Assign; Int 1; BinOp "+"; Int 2; Semi; EOF ];
          make_next_token_test "read plus minus" "+ ++ - -- += -= +9 -test"
            [
-             Add_Subtract;
+             BinOp "+";
              Inc_Dec;
-             Add_Subtract;
+             BinOp "-";
              Inc_Dec;
              Assign;
              Assign;
-             Add_Subtract;
+             BinOp "+";
              Int 9;
-             Add_Subtract;
+             BinOp "-";
              Iden "test";
              EOF;
            ];
-         make_next_token_test "basic assignment expression" "= == === ==== =>"
+         make_next_token_test "Binop and Assign" "= == === ==== =>"
            [ Assign; Equality; Equality; Equality; Assign; Arrow; EOF ];
+         make_next_token_test "More BinOp and Assign" "* % ** *= **= %= / /="
+           [
+             BinOp "*";
+             BinOp "%";
+             BinOp "**";
+             Assign;
+             Assign;
+             Assign;
+             BinOp "/";
+             Assign;
+             EOF;
+           ];
          make_next_token_test "compact assignment expression"
            "const variable=1+2;"
            [
-             Const;
-             Iden "variable";
-             Assign;
-             Int 1;
-             Add_Subtract;
-             Int 2;
-             Semi;
-             EOF;
+             Const; Iden "variable"; Assign; Int 1; BinOp "+"; Int 2; Semi; EOF;
            ];
        ]
 

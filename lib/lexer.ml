@@ -30,7 +30,7 @@ let read_plus_minus l c1 =
   | '=' -> (string_of_char c1 ^ "=", Token.Assign)
   | c2 ->
       if c1 = c2 then (string_of_char c1 ^ string_of_char c2, Token.Inc_Dec)
-      else (string_of_char c1, Token.Add_Subtract)
+      else (string_of_char c1, Token.BinOp (string_of_char c1))
 
 (* First char is = *)
 let read_equal l =
@@ -42,11 +42,36 @@ let read_equal l =
   | '>' -> ("=>", Token.Arrow)
   | _ -> ("=", Token.Assign)
 
+(* First char is * *)
+let read_star l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '*' -> (
+      match inc_lex_curr_pos l 2 |> get_char with
+      | '=' -> ("**=", Token.Assign)
+      | _ -> ("**", Token.BinOp "**"))
+  | '=' -> ("*=", Token.Assign)
+  | _ -> ("*", Token.BinOp "*")
+
+(* First char is % *)
+let read_modulo l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> ("%=", Token.Assign)
+  | _ -> ("%", Token.BinOp "%")
+
+(* First char is / *)
+let read_slash l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> ("/=", Token.Assign)
+  | _ -> ("/", Token.BinOp "/")
+
 let build_token l =
   if l.lex_curr_pos < l.lex_buffer_len then
     match l |> get_char with
     | '+' -> read_plus_minus l '+'
     | '-' -> read_plus_minus l '-'
+    | '*' -> read_star l
+    | '/' -> read_slash l
+    | '%' -> read_modulo l
     | '=' -> read_equal l
     | ';' -> (";", Token.Semi)
     | '0' .. '9' -> read_number l ""
@@ -85,7 +110,7 @@ let show_token = function
   (* Keywords *)
   | Token.Const -> "Const"
   (* Operators *)
-  | Token.Add_Subtract -> "Add_Subtract"
+  | Token.BinOp s -> "BinOp " ^ s
   | Token.Assign -> "Assign"
   | Token.Inc_Dec -> "Inc_Dec"
   | Token.Equality -> "Equality"
