@@ -27,7 +27,9 @@ let rec read_number l t =
 (* First char is +/- *)
 let read_plus_minus l c1 =
   match inc_lex_curr_pos l 1 |> get_char with
-  | '=' -> (string_of_char c1 ^ "=", Token.Assign (string_of_char c1 ^ "="))
+  | '=' ->
+      let token = string_of_char c1 ^ "=" in
+      (token, Token.Assign token)
   | c2 ->
       if c1 = c2 then
         let token = string_of_char c1 ^ string_of_char c2 in
