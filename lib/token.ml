@@ -8,8 +8,8 @@ type t =
   | Const
   (* Operators *)
   | BinOp of string
-  | Assign
-  | Inc_Dec
-  | Equality
+  | Assign of string
+  | Inc_Dec of string
+  | Equality of string
   (* Delimiters *)
   | Semi
