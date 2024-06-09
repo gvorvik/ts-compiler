@@ -31,10 +31,11 @@ let read_plus_minus l c1 =
       let token = string_of_char c1 ^ "=" in
       (token, Token.Assign token)
   | c2 ->
+      let token = string_of_char c1 in
       if c1 = c2 then
-        let token = string_of_char c1 ^ string_of_char c2 in
+        let token = token ^ string_of_char c2 in
         (token, Token.Inc_Dec token)
-      else (string_of_char c1, Token.BinOp (string_of_char c1))
+      else (token, Token.BinOp token)
 
 (* First char is = *)
 let read_equal l =
