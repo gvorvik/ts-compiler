@@ -27,26 +27,56 @@ let rec read_number l t =
 (* First char is +/- *)
 let read_plus_minus l c1 =
   match inc_lex_curr_pos l 1 |> get_char with
-  | '=' -> (string_of_char c1 ^ "=", Token.Assign)
+  | '=' ->
+      let token = string_of_char c1 ^ "=" in
+      (token, Token.Assign token)
   | c2 ->
-      if c1 = c2 then (string_of_char c1 ^ string_of_char c2, Token.Inc_Dec)
-      else (string_of_char c1, Token.Add_Subtract)
+      let token = string_of_char c1 in
+      if c1 = c2 then
+        let token = token ^ string_of_char c2 in
+        (token, Token.Inc_Dec token)
+      else (token, Token.BinOp token)
 
 (* First char is = *)
 let read_equal l =
   match inc_lex_curr_pos l 1 |> get_char with
   | '=' -> (
       match inc_lex_curr_pos l 2 |> get_char with
-      | '=' -> ("===", Token.Equality)
-      | _ -> ("==", Token.Equality))
+      | '=' -> ("===", Token.Equality "===")
+      | _ -> ("==", Token.Equality "=="))
   | '>' -> ("=>", Token.Arrow)
-  | _ -> ("=", Token.Assign)
+  | _ -> ("=", Token.Assign "=")
+
+(* First char is * *)
+let read_star l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '*' -> (
+      match inc_lex_curr_pos l 2 |> get_char with
+      | '=' -> ("**=", Token.Assign "**=")
+      | _ -> ("**", Token.BinOp "**"))
+  | '=' -> ("*=", Token.Assign "*=")
+  | _ -> ("*", Token.BinOp "*")
+
+(* First char is % *)
+let read_modulo l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> ("%=", Token.Assign "%=")
+  | _ -> ("%", Token.BinOp "%")
+
+(* First char is / *)
+let read_slash l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> ("/=", Token.Assign "/=")
+  | _ -> ("/", Token.BinOp "/")
 
 let build_token l =
   if l.lex_curr_pos < l.lex_buffer_len then
     match l |> get_char with
     | '+' -> read_plus_minus l '+'
     | '-' -> read_plus_minus l '-'
+    | '*' -> read_star l
+    | '/' -> read_slash l
+    | '%' -> read_modulo l
     | '=' -> read_equal l
     | ';' -> (";", Token.Semi)
     | '0' .. '9' -> read_number l ""
@@ -85,9 +115,9 @@ let show_token = function
   (* Keywords *)
   | Token.Const -> "Const"
   (* Operators *)
-  | Token.Add_Subtract -> "Add_Subtract"
-  | Token.Assign -> "Assign"
-  | Token.Inc_Dec -> "Inc_Dec"
-  | Token.Equality -> "Equality"
+  | Token.BinOp s -> "BinOp " ^ s
+  | Token.Assign s -> "Assign " ^ s
+  | Token.Inc_Dec s -> "Inc_Dec " ^ s
+  | Token.Equality s -> "Equality " ^ s
   (* Delimiters *)
   | Token.Semi -> "Semi"

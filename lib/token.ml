@@ -7,9 +7,9 @@ type t =
   (* Keywords *)
   | Const
   (* Operators *)
-  | Add_Subtract
-  | Assign
-  | Inc_Dec
-  | Equality
+  | BinOp of string
+  | Assign of string
+  | Inc_Dec of string
+  | Equality of string
   (* Delimiters *)
   | Semi

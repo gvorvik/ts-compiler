@@ -20,31 +20,51 @@ let next_token_tests =
          make_next_token_test "empty program" "" [ EOF ];
          make_next_token_test "program with whitespace" "   \n\r\t\n" [ EOF ];
          make_next_token_test "basic assignment expression" "const x = 1 + 2;"
-           [ Const; Iden "x"; Assign; Int 1; Add_Subtract; Int 2; Semi; EOF ];
+           [ Const; Iden "x"; Assign "="; Int 1; BinOp "+"; Int 2; Semi; EOF ];
          make_next_token_test "read plus minus" "+ ++ - -- += -= +9 -test"
            [
-             Add_Subtract;
-             Inc_Dec;
-             Add_Subtract;
-             Inc_Dec;
-             Assign;
-             Assign;
-             Add_Subtract;
+             BinOp "+";
+             Inc_Dec "++";
+             BinOp "-";
+             Inc_Dec "--";
+             Assign "+=";
+             Assign "-=";
+             BinOp "+";
              Int 9;
-             Add_Subtract;
+             BinOp "-";
              Iden "test";
              EOF;
            ];
-         make_next_token_test "basic assignment expression" "= == === ==== =>"
-           [ Assign; Equality; Equality; Equality; Assign; Arrow; EOF ];
+         make_next_token_test "Equal Sign Tests" "= == === ==== =>"
+           [
+             Assign "=";
+             Equality "==";
+             Equality "===";
+             Equality "===";
+             Assign "=";
+             Arrow;
+             EOF;
+           ];
+         make_next_token_test "BinOp and Assignment" "* % ** *= **= %= / /="
+           [
+             BinOp "*";
+             BinOp "%";
+             BinOp "**";
+             Assign "*=";
+             Assign "**=";
+             Assign "%=";
+             BinOp "/";
+             Assign "/=";
+             EOF;
+           ];
          make_next_token_test "compact assignment expression"
            "const variable=1+2;"
            [
              Const;
              Iden "variable";
-             Assign;
+             Assign "=";
              Int 1;
-             Add_Subtract;
+             BinOp "+";
              Int 2;
              Semi;
              EOF;
@@ -64,9 +84,10 @@ let peek_token_tests =
            assert_equal (Iden "x") (Lexer.peek_token l')
              ~printer:Lexer.show_token;
            let l'', _ = Lexer.next_token l' in
-           assert_equal Assign (Lexer.peek_token l'') ~printer:Lexer.show_token;
-           assert_equal Assign (Lexer.peek_token l'') ~printer:Lexer.show_token
-         );
+           assert_equal (Assign "=") (Lexer.peek_token l'')
+             ~printer:Lexer.show_token;
+           assert_equal (Assign "=") (Lexer.peek_token l'')
+             ~printer:Lexer.show_token );
        ]
 
 let tests = "lexer test suite" >::: [ next_token_tests; peek_token_tests ]
