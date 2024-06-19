@@ -8,32 +8,76 @@ let is_valid_char x =
   x |> is_number || x |> is_letter || x |> is_acceptable_char
 
 let string_of_char c = String.make 1 c
-let inc_lex_curr_pos l n = { l with lex_curr_pos = l.lex_curr_pos + n }
+let get_char l = Bytes.get l.lex_buffer l.lex_curr_pos
+let inc_lex_curr_pos l i = { l with lex_curr_pos = l.lex_curr_pos + i }
 let filter_key_words = function "const" -> Token.Const | t -> Token.Iden t
 
+(* First char is a .. z or A .. Z *)
 let rec read_word l t =
-  if
-    l.lex_curr_pos < l.lex_buffer_len
-    && is_valid_char (Bytes.get l.lex_buffer l.lex_curr_pos)
-  then
-    let char = Bytes.get l.lex_buffer l.lex_curr_pos in
-    read_word (inc_lex_curr_pos l 1) (t ^ string_of_char char)
+  if l.lex_curr_pos < l.lex_buffer_len && l |> get_char |> is_valid_char then
+    read_word (inc_lex_curr_pos l 1) (t ^ (l |> get_char |> string_of_char))
   else (t, filter_key_words t)
 
+(* First char is 0 .. 9 *)
 let rec read_number l t =
-  if
-    l.lex_curr_pos < l.lex_buffer_len
-    && is_number (Bytes.get l.lex_buffer l.lex_curr_pos)
-  then
-    let char = Bytes.get l.lex_buffer l.lex_curr_pos in
-    read_number (inc_lex_curr_pos l 1) (t ^ string_of_char char)
+  if l.lex_curr_pos < l.lex_buffer_len && l |> get_char |> is_number then
+    read_number (inc_lex_curr_pos l 1) (t ^ (l |> get_char |> string_of_char))
   else (t, Token.Int (int_of_string t))
+
+(* First char is +/- *)
+let read_plus_minus l c1 =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' ->
+      let token = string_of_char c1 ^ "=" in
+      (token, Token.Assign token)
+  | c2 ->
+      let token = string_of_char c1 in
+      if c1 = c2 then
+        let token = token ^ string_of_char c2 in
+        (token, Token.Inc_Dec token)
+      else (token, Token.BinOp token)
+
+(* First char is = *)
+let read_equal l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> (
+      match inc_lex_curr_pos l 2 |> get_char with
+      | '=' -> ("===", Token.Equality "===")
+      | _ -> ("==", Token.Equality "=="))
+  | '>' -> ("=>", Token.Arrow)
+  | _ -> ("=", Token.Assign "=")
+
+(* First char is * *)
+let read_star l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '*' -> (
+      match inc_lex_curr_pos l 2 |> get_char with
+      | '=' -> ("**=", Token.Assign "**=")
+      | _ -> ("**", Token.BinOp "**"))
+  | '=' -> ("*=", Token.Assign "*=")
+  | _ -> ("*", Token.BinOp "*")
+
+(* First char is % *)
+let read_modulo l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> ("%=", Token.Assign "%=")
+  | _ -> ("%", Token.BinOp "%")
+
+(* First char is / *)
+let read_slash l =
+  match inc_lex_curr_pos l 1 |> get_char with
+  | '=' -> ("/=", Token.Assign "/=")
+  | _ -> ("/", Token.BinOp "/")
 
 let build_token l =
   if l.lex_curr_pos < l.lex_buffer_len then
-    match Bytes.get l.lex_buffer l.lex_curr_pos with
-    | '+' -> ("+", Token.Add)
-    | '=' -> ("=", Token.Equal)
+    match l |> get_char with
+    | '+' -> read_plus_minus l '+'
+    | '-' -> read_plus_minus l '-'
+    | '*' -> read_star l
+    | '/' -> read_slash l
+    | '%' -> read_modulo l
+    | '=' -> read_equal l
     | ';' -> (";", Token.Semi)
     | '0' .. '9' -> read_number l ""
     | 'a' .. 'z' | 'A' .. 'Z' | '_' -> read_word l ""
@@ -49,7 +93,7 @@ let of_string s =
 
 let rec traverse_white_space l =
   if l.lex_curr_pos < l.lex_buffer_len then
-    match Bytes.get l.lex_buffer l.lex_curr_pos with
+    match l |> get_char with
     | ' ' | '\n' | '\r' | '\t' -> inc_lex_curr_pos l 1 |> traverse_white_space
     | _ -> l
   else l
@@ -63,10 +107,17 @@ let next_token l =
 let peek_token l = l |> next_token |> snd
 
 let show_token = function
-  | Token.Add -> "Add"
-  | Token.Const -> "Const"
   | Token.EOF -> "EOF"
-  | Token.Equal -> "Equal"
-  | Token.Semi -> "Semi"
+  | Token.Arrow -> "Arrow"
+  (* Literals *)
   | Token.Iden s -> "Iden " ^ s
   | Token.Int i -> "Int " ^ string_of_int i
+  (* Keywords *)
+  | Token.Const -> "Const"
+  (* Operators *)
+  | Token.BinOp s -> "BinOp " ^ s
+  | Token.Assign s -> "Assign " ^ s
+  | Token.Inc_Dec s -> "Inc_Dec " ^ s
+  | Token.Equality s -> "Equality " ^ s
+  (* Delimiters *)
+  | Token.Semi -> "Semi"
